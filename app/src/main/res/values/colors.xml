@@ -1,17 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Dark black + blue, as in the reference UI -->
-    <color name="bg_black">#050A14</color>
-    <color name="bg_deep">#0A1428</color>
-    <color name="card">#101E38</color>
-    <color name="card_edge">#1E3A5F</color>
-    <color name="blue">#2E7CF6</color>
-    <color name="blue_dark">#1B4FD8</color>
-    <color name="blue_light">#6EA8FF</color>
+    <!-- v1.3 liquid-glass theme: deep navy night, glass panels, sky-blue / soft-violet accents only.
+         No bright saturated purple gradient background (that is what made v1.3 look cartoonish). -->
+    <color name="bg_black">#050914</color>
+    <color name="bg_deep">#0A1230</color>
+    <color name="bg_navy_top">#0E1B4A</color>
+    <color name="bg_navy_mid">#0A1230</color>
+    <color name="bg_navy_bottom">#050914</color>
+    <color name="bg_violet_deep">#0A1230</color>
+    <color name="bg_indigo_deep">#0E1B4A</color>
+    <color name="card">#141B3D</color>
+    <color name="card_edge">#33FFFFFF</color>
+    <color name="glass_fill">#1AFFFFFF</color>
+    <color name="glass_fill_soft">#14FFFFFF</color>
+    <color name="glass_border">#40FFFFFF</color>
+    <color name="glass_border_bright">#80FFFFFF</color>
+    <color name="blue">#6FB7FF</color>
+    <color name="blue_dark">#0E1B4A</color>
+    <color name="blue_light">#6FB7FF</color>
     <color name="white">#FFFFFF</color>
-    <color name="text_muted">#9DB4D0</color>
-    <color name="accent_purple">#7C5CFF</color>
-    <color name="accent_pink">#E26BA5</color>
-    <color name="accent_teal">#2EC4B6</color>
-    <color name="accent_orange">#F2994A</color>
+    <color name="text_muted">#A8BCD9</color>
+    <color name="accent_purple">#8B7CFF</color>
+    <color name="accent_pink">#B9A8FF</color>
+    <color name="accent_teal">#9CC8FF</color>
+    <color name="accent_orange">#FFB347</color>
+    <!-- Category accents — all in the same sky-blue / soft-violet family, muted, small use only -->
+    <color name="focus_cyan">#6FB7FF</color>
+    <color name="focus_blue">#6FB7FF</color>
+    <color name="sleep_violet">#8B7CFF</color>
+    <color name="sleep_indigo">#8B7CFF</color>
+    <color name="relax_mint">#9CC8FF</color>
+    <color name="relax_teal">#8B7CFF</color>
+    <color name="relief_rose">#B9A8FF</color>
+    <color name="relief_amber">#6FB7FF</color>
+    <color name="gradient_start">#0E1B4A</color>
+    <color name="gradient_mid">#0A1230</color>
+    <color name="gradient_end">#050914</color>
 </resources>
