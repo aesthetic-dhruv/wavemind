@@ -14,7 +14,10 @@ jobs:
           java-version: "17"
           distribution: "temurin"
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        run: |
+          SDKMANAGER="${ANDROID_HOME:-$ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
