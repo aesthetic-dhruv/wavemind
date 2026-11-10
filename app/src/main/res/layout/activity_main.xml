@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ViewFlipper xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/flipper"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_black">
+
+    <!-- ============ 1. WELCOME — "Train your mind with sound" ============ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="WaveMind"
+            android:textColor="@color/blue_light"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginTop="24dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/bg_card"
+            android:gravity="center"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="~ ~ ~"
+                android:textColor="@color/blue_light"
+                android:textSize="36sp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="♪"
+                android:textColor="@color/white"
+                android:textSize="64sp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Focus • Relax • Sleep"
+                android:textColor="@color/text_muted"
+                android:textSize="14sp"
+                android:layout_marginTop="12dp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/welcome_title"
+            android:textColor="@color/white"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginTop="32dp" />
+
+        <TextView
+            android:layout_width="280dp"
+            android:layout_height="wrap_content"
+            android:text="@string/welcome_sub"
+            android:textColor="@color/text_muted"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:layout_marginTop="12dp" />
+
+        <Button
+            android:id="@+id/btn_start"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="32dp"
+            android:background="@drawable/bg_button_blue"
+            android:text="Start  →"
+            android:textColor="@color/white"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- ============ 2. HOME — "How can I help you today?" ============ -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/bg_circle_button"
+                    android:gravity="center"
+                    android:text="R"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="WaveMind"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginStart="12dp" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/home_title"
+                android:textColor="@color/white"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:layout_marginTop="20dp" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:scrollbars="none">
+                <LinearLayout
+                    android:id="@+id/chip_row"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
+
+            <LinearLayout
+                android:id="@+id/mode_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Real binaural beats — live generated tones, no recordings. Headphones required."
+                android:textColor="@color/text_muted"
+                android:textSize="12sp"
+                android:layout_marginTop="16dp" />
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- ============ 3. PLAYER ============ -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:gravity="center_horizontal">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                <ImageButton
+                    android:id="@+id/btn_player_back"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_circle_button"
+                    android:src="@android:drawable/ic_media_previous"
+                    android:contentDescription="Back" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Now Playing"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+                <View
+                    android:layout_width="44dp"
+                    android:layout_height="44dp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/player_art"
+                android:layout_width="220dp"
+                android:layout_height="220dp"
+                android:layout_marginTop="28dp"
+                android:background="@drawable/bg_circle_art"
+                android:gravity="center"
+                android:text="S"
+                android:textColor="@color/white"
+                android:textSize="72sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/relaxing"
+                android:textColor="@color/text_muted"
+                android:textSize="14sp"
+                android:layout_marginTop="20dp" />
+
+            <TextView
+                android:id="@+id/player_timer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="30:00"
+                android:textColor="@color/white"
+                android:textSize="44sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/player_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Better Sleep"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:id="@+id/player_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Delta 3 Hz • 100 Hz / 103 Hz"
+                android:textColor="@color/text_muted"
+                android:textSize="13sp"
+                android:layout_marginTop="4dp" />
+
+            <TextView
+                android:id="@+id/headphone_warning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/headphone_warning"
+                android:textColor="#FFB74D"
+                android:textSize="13sp"
+                android:gravity="center"
+                android:layout_marginTop="12dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/timer_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Timer: 30 min — auto-stop"
+                android:textColor="@color/text_muted"
+                android:textSize="13sp"
+                android:layout_marginTop="20dp" />
+
+            <LinearLayout
+                android:id="@+id/timer_row"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/volume"
+                android:textColor="@color/text_muted"
+                android:textSize="13sp"
+                android:layout_marginTop="16dp" />
+
+            <SeekBar
+                android:id="@+id/volume_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:progress="45"
+                android:layout_marginTop="4dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginTop="20dp">
+                <ImageButton
+                    android:id="@+id/btn_stop"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:background="@drawable/bg_circle_button"
+                    android:src="@android:drawable/ic_menu_close_clear_cancel"
+                    android:contentDescription="Stop" />
+                <ImageButton
+                    android:id="@+id/btn_play_pause"
+                    android:layout_width="84dp"
+                    android:layout_height="84dp"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginEnd="24dp"
+                    android:background="@drawable/bg_button_blue"
+                    android:src="@android:drawable/ic_media_play"
+                    android:contentDescription="Play / Pause"
+                    android:scaleType="center" />
+                <View
+                    android:layout_width="56dp"
+                    android:layout_height="56dp" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Plays in background &amp; offline. Screen off bhi chalega."
+                android:textColor="@color/text_muted"
+                android:textSize="12sp"
+                android:layout_marginTop="16dp" />
+        </LinearLayout>
+    </ScrollView>
+</ViewFlipper>
