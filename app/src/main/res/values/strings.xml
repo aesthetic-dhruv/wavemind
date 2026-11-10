@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WaveMind</string>
+    <string name="welcome_title">Train your mind\nwith sound</string>
+    <string name="welcome_sub">Experience binaural beats to improve focus, reduce stress, relax deeply, and sleep better anytime.</string>
+    <string name="start">Start</string>
+    <string name="home_title">How can I help\nyou today?</string>
+    <string name="headphone_warning">Headphones / earbuds lagao — binaural beat bina unke kaam nahi karta. Speaker se dono tone mix ho jate hain.</string>
+    <string name="volume">Volume</string>
+    <string name="timer">Timer</string>
+    <string name="relaxing">Relaxing</string>
+</resources>
