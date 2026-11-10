@@ -27,27 +27,24 @@
             android:layout_height="300dp"
             android:layout_marginTop="24dp"
             android:background="@drawable/bg_card"
-            android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="8dp">
+            <ImageView
+                android:id="@+id/welcome_img_main"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:src="@drawable/welcome_study"
+                android:scaleType="centerCrop"
+                android:contentDescription="Studying at night" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="~ ~ ~"
-                android:textColor="@color/blue_light"
-                android:textSize="36sp" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="♪"
-                android:textColor="@color/white"
-                android:textSize="64sp" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
                 android:text="Focus • Relax • Sleep"
                 android:textColor="@color/text_muted"
                 android:textSize="14sp"
-                android:layout_marginTop="12dp" />
+                android:layout_marginTop="6dp" />
         </LinearLayout>
 
         <TextView
@@ -190,17 +187,14 @@
                     android:layout_height="44dp" />
             </LinearLayout>
 
-            <TextView
+            <ImageView
                 android:id="@+id/player_art"
                 android:layout_width="220dp"
                 android:layout_height="220dp"
                 android:layout_marginTop="28dp"
-                android:background="@drawable/bg_circle_art"
-                android:gravity="center"
-                android:text="S"
-                android:textColor="@color/white"
-                android:textSize="72sp"
-                android:textStyle="bold" />
+                android:src="@drawable/thumb_sleep"
+                android:scaleType="centerCrop"
+                android:contentDescription="Now playing art" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -223,7 +217,7 @@
                 android:id="@+id/player_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Better Sleep"
+                android:text="Deep Sleep"
                 android:textColor="@color/white"
                 android:textSize="20sp"
                 android:textStyle="bold"
@@ -279,6 +273,62 @@
                 android:layout_height="wrap_content"
                 android:max="100"
                 android:progress="45"
+                android:layout_marginTop="4dp" />
+
+            <!-- ============ MUSIC MIXER — add a background sound ============ -->
+            <!-- Default: OFF (pure beat only). Tap a sound to add it under
+                 any beat, tap "Off • Pure Beat" (or the same chip again)
+                 to remove it. All mixer sounds are real recordings —
+                 Mixkit / Freesound, free licence (see README credits). -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mix Background Sound"
+                android:textColor="@color/white"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:layout_marginTop="28dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Real recordings — Mixkit / Freesound, free licence. Default: Pure Beat only."
+                android:textColor="@color/text_muted"
+                android:textSize="12sp"
+                android:gravity="center"
+                android:layout_marginTop="4dp" />
+
+            <TextView
+                android:id="@+id/mixer_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mix: Pure Beat"
+                android:textColor="@color/blue_light"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginTop="8dp" />
+
+            <LinearLayout
+                android:id="@+id/mixer_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Background volume"
+                android:textColor="@color/text_muted"
+                android:textSize="13sp"
+                android:layout_marginTop="12dp" />
+
+            <SeekBar
+                android:id="@+id/mixer_volume_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:progress="30"
                 android:layout_marginTop="4dp" />
 
             <LinearLayout
