@@ -29,6 +29,13 @@ class BinauralEngine {
     private var audioTrack: AudioTrack? = null
     private var volume = 0.45f
 
+    // Music Mixer: OFF by default (null = pure binaural beat only).
+    // Diotic background sound, mixed under the beat at its own volume.
+    @Volatile
+    private var background: BackgroundSound? = null
+    private var backgroundVolume = 0.30f
+    private val backgroundGenerator = BackgroundGenerator()
+
     var onFinished: (() -> Unit)? = null
 
     fun setVolume(v: Float) {
@@ -37,6 +44,19 @@ class BinauralEngine {
     }
 
     fun getVolume(): Float = volume
+
+    fun setBackground(sound: BackgroundSound?) {
+        background = sound
+        backgroundGenerator.setKind(sound?.kind)
+    }
+
+    fun getBackground(): BackgroundSound? = background
+
+    fun setBackgroundVolume(v: Float) {
+        backgroundVolume = v.coerceIn(0f, 1f)
+    }
+
+    fun getBackgroundVolume(): Float = backgroundVolume
 
     fun isRunning(): Boolean = running
 
@@ -85,9 +105,18 @@ class BinauralEngine {
             while (running) {
                 for (i in 0 until frameCount) {
                     if (fade < 1.0) fade = (fade + fadeStep).coerceAtMost(1.0)
-                    val amp = (0.5 * 32767 * fade).toInt()
-                    buffer[i * 2] = (sin(phaseL) * amp).toInt().toShort()
-                    buffer[i * 2 + 1] = (sin(phaseR) * amp).toInt().toShort()
+                    // Background (mixer) sound: same in both ears, under
+                    // the beat, faded in like the tones. Null = pure beat.
+                    val bg = if (background != null) {
+                        backgroundGenerator.nextSample(SAMPLE_RATE) *
+                            backgroundVolume * fade
+                    } else 0.0
+                    val left = (sin(phaseL) * 0.5 * fade + bg)
+                        .coerceIn(-1.0, 1.0)
+                    val right = (sin(phaseR) * 0.5 * fade + bg)
+                        .coerceIn(-1.0, 1.0)
+                    buffer[i * 2] = (left * 32767).toInt().toShort()
+                    buffer[i * 2 + 1] = (right * 32767).toInt().toShort()
                     phaseL += stepL
                     phaseR += stepR
                     if (phaseL > 2.0 * PI) phaseL -= 2.0 * PI

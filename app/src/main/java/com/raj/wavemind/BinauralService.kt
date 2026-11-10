@@ -35,11 +35,14 @@ class BinauralService : Service() {
         const val EXTRA_MODE_ID = "mode_id"
         const val EXTRA_MINUTES = "minutes"
         const val EXTRA_VOLUME = "volume"
+        const val EXTRA_BACKGROUND_ID = "background_id"
+        const val BACKGROUND_OFF = "off"
     }
 
     private val binder = LocalBinder()
     private val engine = BinauralEngine()
     private var currentMode: Mode = Mode.SLEEP
+    private var currentBackground: BackgroundSound? = null
     private var timer: CountDownTimer? = null
     private var remainingMs: Long = 0L
     private var totalMs: Long = 0L
@@ -97,7 +100,9 @@ class BinauralService : Service() {
                 val mode = Mode.byId(intent.getStringExtra(EXTRA_MODE_ID) ?: "sleep")
                 val minutes = intent.getIntExtra(EXTRA_MINUTES, mode.defaultMinutes)
                 val volume = intent.getFloatExtra(EXTRA_VOLUME, 0.45f)
-                play(mode, minutes, volume)
+                // "off" clears the mix; absent extra keeps the current mix.
+                val bgId = intent.getStringExtra(EXTRA_BACKGROUND_ID)
+                play(mode, minutes, volume, bgId)
             }
             ACTION_PAUSE -> pause()
             ACTION_RESUME -> resume()
@@ -109,11 +114,16 @@ class BinauralService : Service() {
         return START_NOT_STICKY
     }
 
-    fun play(mode: Mode, minutes: Int, volume: Float) {
+    fun play(mode: Mode, minutes: Int, volume: Float, backgroundId: String? = null) {
         currentMode = mode
+        if (backgroundId != null) {
+            currentBackground = if (backgroundId == BACKGROUND_OFF) null
+            else BackgroundSound.byId(backgroundId)
+        }
         totalMs = minutes * 60L * 1000L
         remainingMs = totalMs
         engine.setVolume(volume)
+        engine.setBackground(currentBackground)
         engine.start(mode)
         playing = true
         if (wakeLock?.isHeld == false) wakeLock?.acquire()
@@ -147,7 +157,7 @@ class BinauralService : Service() {
     fun resume() {
         if (playing) return
         val minutes = ((remainingMs + 59999) / 60000).toInt().coerceAtLeast(1)
-        play(currentMode, minutes, engine.getVolume())
+        play(currentMode, minutes, engine.getVolume(), currentBackground?.id ?: BACKGROUND_OFF)
     }
 
     fun stopSession() {
@@ -162,6 +172,17 @@ class BinauralService : Service() {
 
     fun setVolume(v: Float) = engine.setVolume(v)
     fun getVolume(): Float = engine.getVolume()
+
+    // Music Mixer: live change, works mid-session. Null = pure beat.
+    fun setBackgroundSound(id: String?) {
+        currentBackground = if (id == null || id == BACKGROUND_OFF) null
+        else BackgroundSound.byId(id)
+        engine.setBackground(currentBackground)
+    }
+
+    fun getBackgroundSound(): BackgroundSound? = currentBackground
+    fun setBackgroundVolume(v: Float) = engine.setBackgroundVolume(v)
+    fun getBackgroundVolume(): Float = engine.getBackgroundVolume()
     fun isPlaying(): Boolean = playing
     fun getCurrentMode(): Mode = currentMode
     fun getRemainingMs(): Long = remainingMs

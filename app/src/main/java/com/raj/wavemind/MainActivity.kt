@@ -13,10 +13,13 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.graphics.Outline
 import android.view.Gravity
 import android.view.View
+import android.view.ViewOutlineProvider
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.TextView
@@ -43,16 +46,22 @@ class MainActivity : AppCompatActivity() {
     private lateinit var playerTitle: TextView
     private lateinit var playerTag: TextView
     private lateinit var playerTimer: TextView
-    private lateinit var playerArt: TextView
+    private lateinit var playerArt: ImageView
     private lateinit var playPauseBtn: ImageButton
     private lateinit var volumeBar: SeekBar
     private lateinit var headphoneWarning: TextView
     private lateinit var timerLabel: TextView
+    private lateinit var mixerContainer: LinearLayout
+    private lateinit var mixerVolumeBar: SeekBar
+    private lateinit var mixerLabel: TextView
 
     private var service: BinauralService? = null
     private var bound = false
     private var selectedMode: Mode = Mode.SLEEP
     private var selectedMinutes: Int = Mode.SLEEP.defaultMinutes
+    // Music Mixer: OFF by default (null = pure beat only).
+    private var selectedBackground: BackgroundSound? = null
+    private val mixerChips = mutableListOf<Pair<Button, BackgroundSound?>>()
 
     private val pollHandler = Handler(Looper.getMainLooper())
     private val pollRunnable = object : Runnable {
@@ -90,6 +99,14 @@ class MainActivity : AppCompatActivity() {
         volumeBar = findViewById(R.id.volume_bar)
         headphoneWarning = findViewById(R.id.headphone_warning)
         timerLabel = findViewById(R.id.timer_label)
+        mixerContainer = findViewById(R.id.mixer_container)
+        mixerVolumeBar = findViewById(R.id.mixer_volume_bar)
+        mixerLabel = findViewById(R.id.mixer_label)
+
+        // Thumbnails: circular player art, rounded welcome image.
+        // (Welcome screen has a single image now — no left/right images.)
+        ovalClip(playerArt)
+        roundClip(findViewById(R.id.welcome_img_main), 16f)
 
         findViewById<Button>(R.id.btn_start).setOnClickListener { showHome() }
         findViewById<ImageButton>(R.id.btn_player_back).setOnClickListener { showHome() }
@@ -118,7 +135,21 @@ class MainActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(sb: SeekBar?) {}
         })
 
+        // Mixer background volume: default 30%.
+        mixerVolumeBar.max = 100
+        mixerVolumeBar.progress = 30
+        mixerVolumeBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
+                service?.setBackgroundVolume(progress / 100f)
+            }
+
+            override fun onStartTrackingTouch(sb: SeekBar?) {}
+            override fun onStopTrackingTouch(sb: SeekBar?) {}
+        })
+
         buildHome()
+        buildMixer()
+        updateMixerLabel()
         updateHeadphoneWarning()
         requestNotificationPermission()
     }
@@ -151,9 +182,11 @@ class MainActivity : AppCompatActivity() {
         selectedMode = mode
         selectedMinutes = mode.defaultMinutes
         refreshTimerChips()
+        refreshMixerChips()
+        updateMixerLabel()
         playerTitle.text = mode.title
         playerTag.text = "${mode.tag} • ${formatHz(mode.leftHz)} / ${formatHz(mode.rightHz)}"
-        playerArt.text = mode.title.first().toString()
+        playerArt.setImageResource(mode.thumbRes)
         timerLabel.text = "Timer: $selectedMinutes min — auto-stop"
         updateHeadphoneWarning()
         flipper.displayedChild = 2
@@ -182,7 +215,9 @@ class MainActivity : AppCompatActivity() {
                 card.findViewById<TextView>(R.id.mode_card_sub).text = mode.subtitle
                 card.findViewById<TextView>(R.id.mode_card_time).text =
                     "${mode.defaultMinutes} min • ${mode.tag}"
-                card.findViewById<TextView>(R.id.mode_card_art).text = mode.title.first().toString()
+                val thumb = card.findViewById<ImageView>(R.id.mode_card_art)
+                thumb.setImageResource(mode.thumbRes)
+                roundClip(thumb, 16f)
                 card.findViewById<ImageButton>(R.id.mode_card_play)
                     .setOnClickListener { openMode(mode) }
                 card.setOnClickListener { openMode(mode) }
@@ -194,6 +229,68 @@ class MainActivity : AppCompatActivity() {
     private fun openMode(mode: Mode) {
         showPlayer(mode)
         startSession(mode)
+    }
+
+    // ---------- music mixer ----------
+
+    // "Off • Pure Beat" first (default), then one row per section:
+    // Noise (5), Nature (6), Music (5). Tap a chip to add that sound
+    // under the current beat; tap it again, or "Off", to remove it.
+    // The choice stays across modes until the user changes it.
+    private fun buildMixer() {
+        val offChip = makeChip("Off • Pure Beat", selectedBackground == null) {
+            selectBackground(null)
+        }
+        mixerChips.add(offChip to null)
+        val offRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        offRow.addView(offChip)
+        mixerContainer.addView(offRow)
+
+        BackgroundSound.SECTIONS.forEach { section ->
+            val header = TextView(this).apply {
+                text = section.label
+                setTextColor(ContextCompat.getColor(context, R.color.blue_light))
+                textSize = 14f
+                setTypeface(null, android.graphics.Typeface.BOLD)
+                setPadding(4, 20, 4, 0)
+            }
+            mixerContainer.addView(header)
+            val scroll = android.widget.HorizontalScrollView(this).apply {
+                isHorizontalScrollBarEnabled = false
+            }
+            val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+            BackgroundSound.ALL.filter { it.section == section }.forEach { sound ->
+                val chip = makeChip(sound.title, selectedBackground?.id == sound.id) {
+                    selectBackground(if (selectedBackground?.id == sound.id) null else sound)
+                }
+                mixerChips.add(chip to sound)
+                row.addView(chip)
+            }
+            scroll.addView(row)
+            mixerContainer.addView(scroll)
+        }
+    }
+
+    private fun selectBackground(sound: BackgroundSound?) {
+        selectedBackground = sound
+        service?.setBackgroundSound(sound?.id)
+        refreshMixerChips()
+        updateMixerLabel()
+    }
+
+    private fun refreshMixerChips() {
+        mixerChips.forEach { (chip, sound) ->
+            val isSelected = selectedBackground?.id == sound?.id
+            chip.isSelected = isSelected
+            chip.setBackgroundResource(
+                if (isSelected) R.drawable.bg_chip_selected else R.drawable.bg_chip
+            )
+        }
+    }
+
+    private fun updateMixerLabel() {
+        mixerLabel.text = if (selectedBackground == null) "Mix: Pure Beat"
+        else "Mix: ${selectedBackground!!.title} + ${selectedMode.title}"
     }
 
     // ---------- playback ----------
@@ -211,6 +308,10 @@ class MainActivity : AppCompatActivity() {
             putExtra(BinauralService.EXTRA_MODE_ID, mode.id)
             putExtra(BinauralService.EXTRA_MINUTES, selectedMinutes)
             putExtra(BinauralService.EXTRA_VOLUME, volumeBar.progress / 100f)
+            putExtra(
+                BinauralService.EXTRA_BACKGROUND_ID,
+                selectedBackground?.id ?: BinauralService.BACKGROUND_OFF
+            )
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent)
@@ -264,7 +365,37 @@ class MainActivity : AppCompatActivity() {
         if (flipper.displayedChild == 2) {
             playerTitle.text = mode.title
             playerTag.text = "${mode.tag} • ${formatHz(mode.leftHz)} / ${formatHz(mode.rightHz)}"
-            playerArt.text = mode.title.first().toString()
+            playerArt.setImageResource(mode.thumbRes)
+            // Only sync the mix from the service while playing — before
+            // play starts, the user's chip choice is the source of truth.
+            if (svc.isPlaying()) {
+                selectedBackground = svc.getBackgroundSound()
+                refreshMixerChips()
+                updateMixerLabel()
+            }
+        }
+    }
+
+    // ---------- thumbnail clipping ----------
+
+    // Circular crop for the player art (220dp circle, like the reference).
+    private fun ovalClip(view: View) {
+        view.clipToOutline = true
+        view.outlineProvider = object : ViewOutlineProvider() {
+            override fun getOutline(v: View, outline: Outline) {
+                outline.setOval(0, 0, v.width, v.height)
+            }
+        }
+    }
+
+    // Rounded corners for card thumbnails and welcome collage images.
+    private fun roundClip(view: View, radiusDp: Float) {
+        view.clipToOutline = true
+        val radiusPx = radiusDp * resources.displayMetrics.density
+        view.outlineProvider = object : ViewOutlineProvider() {
+            override fun getOutline(v: View, outline: Outline) {
+                outline.setRoundRect(0, 0, v.width, v.height, radiusPx)
+            }
         }
     }
 
