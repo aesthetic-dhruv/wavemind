@@ -31,7 +31,9 @@ import androidx.core.content.ContextCompat
 
 /**
  * WaveMind — Raj's own binaural beats app.
- * Dark black + blue theme, modelled on the reference UI:
+ * Liquid-glass theme (v1.3 redo): deep navy night background, translucent
+ * frosted-glass panels/cards/chips, liquid-glass Start button. Modelled on
+ * the reference UI:
  * welcome ("Train your mind with sound") -> home
  * ("How can I help you today?") -> player (circular art, timer, controls).
  *
@@ -187,9 +189,35 @@ class MainActivity : AppCompatActivity() {
         playerTitle.text = mode.title
         playerTag.text = "${mode.tag} • ${formatHz(mode.leftHz)} / ${formatHz(mode.rightHz)}"
         playerArt.setImageResource(mode.thumbRes)
+        findViewById<android.widget.FrameLayout>(R.id.player_ring)
+            .setBackgroundResource(categoryRing(mode.category))
         timerLabel.text = "Timer: $selectedMinutes min — auto-stop"
         updateHeadphoneWarning()
         flipper.displayedChild = 2
+    }
+
+
+    // ---------- v1.3 liquid-glass theme: muted sky-blue / soft-violet accent per category ----------
+    private fun categoryColor(category: String): Int = when (category) {
+        "Focus" -> R.color.focus_cyan
+        "Sleep" -> R.color.sleep_violet
+        "Relax" -> R.color.relax_mint
+        "Relief" -> R.color.relief_rose
+        else -> R.color.blue_light
+    }
+    private fun categoryCard(category: String): Int = when (category) {
+        "Focus" -> R.drawable.bg_card_focus
+        "Sleep" -> R.drawable.bg_card_sleep
+        "Relax" -> R.drawable.bg_card_relax
+        "Relief" -> R.drawable.bg_card_relief
+        else -> R.drawable.bg_card
+    }
+    private fun categoryRing(category: String): Int = when (category) {
+        "Focus" -> R.drawable.bg_ring_focus
+        "Sleep" -> R.drawable.bg_ring_sleep
+        "Relax" -> R.drawable.bg_ring_relax
+        "Relief" -> R.drawable.bg_ring_relief
+        else -> R.drawable.bg_ring_sleep
     }
 
     // ---------- home ----------
@@ -203,18 +231,21 @@ class MainActivity : AppCompatActivity() {
         Mode.CATEGORIES.forEach { category ->
             val header = TextView(this).apply {
                 text = category
-                setTextColor(ContextCompat.getColor(context, R.color.blue_light))
-                textSize = 15f
+                setTextColor(ContextCompat.getColor(context, categoryColor(category)))
+                textSize = 17f
                 setTypeface(null, android.graphics.Typeface.BOLD)
                 setPadding(4, 28, 4, 0)
             }
             modeList.addView(header)
             Mode.ALL.filter { it.category == category }.forEach { mode ->
                 val card = layoutInflater.inflate(R.layout.item_mode, modeList, false)
+                card.setBackgroundResource(categoryCard(mode.category))
                 card.findViewById<TextView>(R.id.mode_card_title).text = mode.title
                 card.findViewById<TextView>(R.id.mode_card_sub).text = mode.subtitle
-                card.findViewById<TextView>(R.id.mode_card_time).text =
-                    "${mode.defaultMinutes} min • ${mode.tag}"
+                card.findViewById<TextView>(R.id.mode_card_time).apply {
+                    text = "${mode.defaultMinutes} min • ${mode.tag}"
+                    setTextColor(ContextCompat.getColor(context, categoryColor(mode.category)))
+                }
                 val thumb = card.findViewById<ImageView>(R.id.mode_card_art)
                 thumb.setImageResource(mode.thumbRes)
                 roundClip(thumb, 16f)
