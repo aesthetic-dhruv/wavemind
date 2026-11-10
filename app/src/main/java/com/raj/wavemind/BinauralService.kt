@@ -40,7 +40,7 @@ class BinauralService : Service() {
     }
 
     private val binder = LocalBinder()
-    private val engine = BinauralEngine()
+    private lateinit var engine: BinauralEngine
     private var currentMode: Mode = Mode.SLEEP
     private var currentBackground: BackgroundSound? = null
     private var timer: CountDownTimer? = null
@@ -57,6 +57,7 @@ class BinauralService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        engine = BinauralEngine(applicationContext)
         createChannel()
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "WaveMind::playback")

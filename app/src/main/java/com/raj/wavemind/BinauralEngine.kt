@@ -1,8 +1,10 @@
 package com.raj.wavemind
 
+import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
+import android.media.MediaPlayer
 import kotlin.math.PI
 import kotlin.math.sin
 
@@ -16,8 +18,14 @@ import kotlin.math.sin
  * Runs on its own thread so playback continues while the UI is idle,
  * and stops cleanly on [stop]. Volume is 0.0–1.0 (default 0.45 —
  * binaural beats should be barely audible, never loud).
+ *
+ * Music Mixer: the background sound is a REAL recording from
+ * res/raw/ (see [BackgroundSound]), played looped by a MediaPlayer
+ * under the binaural tones. OFF by default (null = pure beat only).
+ * The recording plays identically in both ears, so it never
+ * disturbs the left/right beat.
  */
-class BinauralEngine {
+class BinauralEngine(private val context: Context) {
 
     companion object {
         const val SAMPLE_RATE = 44100
@@ -30,11 +38,12 @@ class BinauralEngine {
     private var volume = 0.45f
 
     // Music Mixer: OFF by default (null = pure binaural beat only).
-    // Diotic background sound, mixed under the beat at its own volume.
     @Volatile
     private var background: BackgroundSound? = null
     private var backgroundVolume = 0.30f
-    private val backgroundGenerator = BackgroundGenerator()
+    private var bgPlayer: MediaPlayer? = null
+    @Volatile
+    private var bgFadeCancel = false
 
     var onFinished: (() -> Unit)? = null
 
@@ -47,18 +56,75 @@ class BinauralEngine {
 
     fun setBackground(sound: BackgroundSound?) {
         background = sound
-        backgroundGenerator.setKind(sound?.kind)
+        if (running) startBackgroundPlayer() else stopBackgroundPlayer()
     }
 
     fun getBackground(): BackgroundSound? = background
 
     fun setBackgroundVolume(v: Float) {
         backgroundVolume = v.coerceIn(0f, 1f)
+        bgPlayer?.setVolume(backgroundVolume, backgroundVolume)
     }
 
     fun getBackgroundVolume(): Float = backgroundVolume
 
     fun isRunning(): Boolean = running
+
+    /** (Re)starts the looped background recording, if one is selected. */
+    private fun startBackgroundPlayer() {
+        stopBackgroundPlayer()
+        val sound = background ?: return
+        val player = try {
+            MediaPlayer.create(context.applicationContext, sound.rawRes)
+        } catch (_: Exception) {
+            null
+        } ?: return
+        bgPlayer = player
+        player.isLooping = true
+        player.setVolume(0f, 0f)
+        try {
+            player.start()
+        } catch (_: Exception) {
+            stopBackgroundPlayer()
+            return
+        }
+        // Gentle 2-second fade-in so the recording never starts abruptly.
+        bgFadeCancel = false
+        val target = backgroundVolume
+        Thread({
+            for (step in 1..20) {
+                if (bgFadeCancel || !running) break
+                try {
+                    Thread.sleep(100)
+                } catch (_: InterruptedException) {
+                    break
+                }
+                val p = bgPlayer ?: break
+                try {
+                    val v = target * step / 20f
+                    p.setVolume(v, v)
+                } catch (_: Exception) {
+                    break
+                }
+            }
+        }, "WaveMind-BgFade").also { it.start() }
+    }
+
+    private fun stopBackgroundPlayer() {
+        bgFadeCancel = true
+        val player = bgPlayer
+        bgPlayer = null
+        if (player != null) {
+            try {
+                if (player.isPlaying) player.stop()
+            } catch (_: Exception) {
+            }
+            try {
+                player.release()
+            } catch (_: Exception) {
+            }
+        }
+    }
 
     fun start(mode: Mode) {
         stop()
@@ -90,6 +156,7 @@ class BinauralEngine {
             audioTrack = track
             track.setVolume(volume)
             track.play()
+            startBackgroundPlayer()
 
             // Interleaved stereo PCM: L, R, L, R ...
             val frameCount = bufferSize / 4 // 2 channels x 2 bytes
@@ -105,16 +172,8 @@ class BinauralEngine {
             while (running) {
                 for (i in 0 until frameCount) {
                     if (fade < 1.0) fade = (fade + fadeStep).coerceAtMost(1.0)
-                    // Background (mixer) sound: same in both ears, under
-                    // the beat, faded in like the tones. Null = pure beat.
-                    val bg = if (background != null) {
-                        backgroundGenerator.nextSample(SAMPLE_RATE) *
-                            backgroundVolume * fade
-                    } else 0.0
-                    val left = (sin(phaseL) * 0.5 * fade + bg)
-                        .coerceIn(-1.0, 1.0)
-                    val right = (sin(phaseR) * 0.5 * fade + bg)
-                        .coerceIn(-1.0, 1.0)
+                    val left = (sin(phaseL) * 0.5 * fade).coerceIn(-1.0, 1.0)
+                    val right = (sin(phaseR) * 0.5 * fade).coerceIn(-1.0, 1.0)
                     buffer[i * 2] = (left * 32767).toInt().toShort()
                     buffer[i * 2 + 1] = (right * 32767).toInt().toShort()
                     phaseL += stepL
@@ -132,6 +191,7 @@ class BinauralEngine {
 
     fun stop() {
         running = false
+        stopBackgroundPlayer()
         try {
             thread?.join(1000)
         } catch (_: InterruptedException) {
